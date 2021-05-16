@@ -23,6 +23,11 @@ namespace RecordingAudioAsp.Net.Controllers
 			return View();
 		}
 
+		public IActionResult RecorderJS()
+		{
+			return View();
+		}
+
 		public IActionResult Privacy()
 		{
 			return View();
