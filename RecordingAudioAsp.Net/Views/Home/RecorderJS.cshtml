@@ -9,75 +9,140 @@
 <p>Make sure you are using a recent version of Google Chrome.</p>
 <p>Also before you enable microphone input either plug in headphones or turn the volume down if you want to avoid ear splitting feedback!</p>
 
-<button onclick="startRecording(this);">Record</button>
-<button onclick="stopRecording(this);">Stop</button>
-<button onclick="deleteAll();">Delete all</button>
+<div class="row">
+	<div class="col-sm">
+		<div class="text-center">
+			<p>Audio 1</p>
+			<button onclick="startRecording(this, 1);">Record</button>
+			<button onclick="stopRecording(this, 1);">Stop</button>
+			<button onclick="deleteAll(1);">Delete all</button>
+		</div>
 
-<h2>Recordings</h2>
-<ul id="recordingslist"></ul>
+		<h4>Recordings</h4>
+		<ul id="recordingslist1"></ul>
 
-<h2>Log</h2>
-<pre id="log"></pre>
+		<h4>Log</h4>
+		<pre id="log1"></pre>
+	</div>
+	<div class="col-sm">
+		<div class="text-center">
+			<p>Audio 2</p>
+			<button onclick="startRecording(this, 2);">Record</button>
+			<button onclick="stopRecording(this, 2);">Stop</button>
+			<button onclick="deleteAll(2);">Delete all</button>
+		</div>
 
+		<h4>Recordings</h4>
+		<ul id="recordingslist2"></ul>
+
+		<h4>Log</h4>
+		<pre id="log2"></pre>
+	</div>
+</div>
 <script>
-	function __log(e, data) {
-		log.innerHTML += "\n" + e + " " + (data || '');
+	function __log(e, data, i) {
+		if (i == 1)
+			log1.innerHTML += "\n" + e + " " + (data || '');
+		else if (i == 2)
+			log2.innerHTML += "\n" + e + " " + (data || '');
+		else {
+			log1.innerHTML += "\n" + e + " " + (data || '');
+			log2.innerHTML += "\n" + e + " " + (data || '');
+		}
 	}
 
 	var audio_context;
-	var recorder;
+	var recorder1, recorder2;
 
 	function startUserMedia(stream) {
-		var input = audio_context.createMediaStreamSource(stream);
+		var input1 = audio_context.createMediaStreamSource(stream);
+		var input2 = audio_context.createMediaStreamSource(stream);
 		__log('Media stream created.');
 
 		// Uncomment if you want the audio to feedback directly
 		//input.connect(audio_context.destination);
 		//__log('Input connected to audio context destination.');
 
-		recorder = new Recorder(input);
+		recorder1 = new Recorder(input1);
+		recorder2 = new Recorder(input2);
 		__log('Recorder initialised.');
 	}
 
-	function startRecording(button) {
-		recorder && recorder.record();
+	function startRecording(button, i) {
+		if (i == 1) {
+			recorder1 && recorder1.record();
+		} else {
+			recorder2 && recorder2.record();
+		}
 		button.disabled = true;
 		button.nextElementSibling.disabled = false;
-		__log('Recording...');
+		__log('Recording...', null, i);
 	}
 
-	function stopRecording(button) {
-		recorder && recorder.stop();
+	function stopRecording(button, i) {
+		if (i == 1) {
+			recorder1 && recorder1.stop();
+		} else {
+			recorder2 && recorder2.stop();
+		}
+		__log('Stopped recording.', null, i);
+
 		button.disabled = true;
 		button.previousElementSibling.disabled = false;
-		__log('Stopped recording.');
 
 		// create WAV download link using audio data blob
-		createDownloadLink();
+		createDownloadLink(i);
 
-		recorder.clear();
+		__log('Stopped recording.', null, i);
+
+		if (i == 1)
+			recorder1.clear();
+		else
+			recorder2.clear();
 	}
 
-	function createDownloadLink() {
-		recorder && recorder.exportWAV(function (blob) {
-			var url = URL.createObjectURL(blob);
-			var li = document.createElement('li');
-			var au = document.createElement('audio');
-			var hf = document.createElement('a');
+	function createDownloadLink(i) {
+		var li = document.createElement('li');
+		var au = document.createElement('audio');
+		var hf = document.createElement('a');
+		var br = document.createElement("br");
 
-			au.controls = true;
-			au.src = url;
-			hf.href = url;
-			hf.download = new Date().toISOString() + '.wav';
-			hf.innerHTML = hf.download;
-			li.appendChild(au);
-			li.appendChild(hf);
-			recordingslist.appendChild(li);
-		});
+		au.controls = true;
+
+		if (i == 1) {
+			recorder1 && recorder1.exportWAV(function (blob) {
+				var url = URL.createObjectURL(blob);
+
+				au.src = url;
+				hf.href = url;
+				hf.download = new Date().toISOString() + '.wav';
+				hf.innerHTML = hf.download;
+				li.appendChild(au);
+				li.appendChild(br);
+				li.appendChild(hf);
+				recordingslist1.appendChild(li);
+			});
+		} else {
+			recorder2 && recorder2.exportWAV(function (blob) {
+				var url = URL.createObjectURL(blob);
+
+				au.src = url;
+				hf.href = url;
+				hf.download = new Date().toISOString() + '.wav';
+				hf.innerHTML = hf.download;
+				li.appendChild(au);
+				li.appendChild(br);
+				li.appendChild(hf);
+				recordingslist2.appendChild(li);
+			});
+		}
 	}
 
-	function deleteAll() {
-		recordingslist.innerHTML = '';
+	function deleteAll(i) {
+		if (i == 1)
+			recordingslist1.innerHTML = '';
+		else
+			recordingslist2.innerHTML = '';
 	}
 
 	window.onload = function init() {
