@@ -12,157 +12,156 @@
 <div class="row">
 	<div class="col-sm">
 		<div class="text-center">
-			<p>Audio 1</p>
-			<button onclick="startRecording(this, 1);">Record</button>
-			<button onclick="stopRecording(this, 1);">Stop</button>
-			<button onclick="deleteAll(1);">Delete all</button>
+			<p><strong>audio 1</strong></p>
+			<button onclick="startRecording(this, 1);" class="btn btn-primary">Record</button>
+			<button onclick="stopRecording(this, 1);" class="btn btn-secondary" disabled>Stop</button>
+			<button onclick="deleteAll(1);" class="btn btn-danger">Delete all</button>
+			<input type="file" accept="audio/*" capture id="btnAddFile1" class="btn btn-light" />
 		</div>
 
 		<h4>Recordings</h4>
-		<ul id="recordingslist1"></ul>
+		<ol id="recordingslist1"></ol>
 
 		<h4>Log</h4>
 		<pre id="log1"></pre>
 	</div>
 	<div class="col-sm">
 		<div class="text-center">
-			<p>Audio 2</p>
-			<button onclick="startRecording(this, 2);">Record</button>
-			<button onclick="stopRecording(this, 2);">Stop</button>
-			<button onclick="deleteAll(2);">Delete all</button>
+			<p><strong>audio 2</strong></p>
+			<button onclick="startRecording(this, 2);" class="btn btn-primary">Record</button>
+			<button onclick="stopRecording(this, 2);" class="btn btn-secondary" disabled>Stop</button>
+			<button onclick="deleteAll(2);" class="btn btn-danger">Delete all</button>
+			<input type="file" accept="audio/*" capture id="btnAddFile2" class="btn btn-light" />
 		</div>
 
 		<h4>Recordings</h4>
-		<ul id="recordingslist2"></ul>
+		<ol id="recordingslist2"></ol>
 
 		<h4>Log</h4>
 		<pre id="log2"></pre>
 	</div>
 </div>
-<script>
-	function __log(e, data, i) {
-		if (i == 1)
-			log1.innerHTML += "\n" + e + " " + (data || '');
-		else if (i == 2)
-			log2.innerHTML += "\n" + e + " " + (data || '');
-		else {
-			log1.innerHTML += "\n" + e + " " + (data || '');
-			log2.innerHTML += "\n" + e + " " + (data || '');
+
+@section Scripts{
+	<script>
+		var audio_context;
+		var recorder1, recorder2;
+
+		function showLog(e, data, i) {
+			if (i == 1)
+				log1.innerHTML += "\n" + e + " " + (data || '');
+			else if (i == 2)
+				log2.innerHTML += "\n" + e + " " + (data || '');
+			else {
+				log1.innerHTML += "\n" + e + " " + (data || '');
+				log2.innerHTML += "\n" + e + " " + (data || '');
+			}
 		}
-	}
 
-	var audio_context;
-	var recorder1, recorder2;
+		function startUserMedia(stream) {
+			var input1 = audio_context.createMediaStreamSource(stream);
+			var input2 = audio_context.createMediaStreamSource(stream);
+			showLog('Media stream created.');
 
-	function startUserMedia(stream) {
-		var input1 = audio_context.createMediaStreamSource(stream);
-		var input2 = audio_context.createMediaStreamSource(stream);
-		__log('Media stream created.');
-
-		// Uncomment if you want the audio to feedback directly
-		//input.connect(audio_context.destination);
-		//__log('Input connected to audio context destination.');
-
-		recorder1 = new Recorder(input1);
-		recorder2 = new Recorder(input2);
-		__log('Recorder initialised.');
-	}
-
-	function startRecording(button, i) {
-		if (i == 1) {
-			recorder1 && recorder1.record();
-		} else {
-			recorder2 && recorder2.record();
+			recorder1 = new Recorder(input1);
+			recorder2 = new Recorder(input2);
+			showLog('Recorder initialised.');
 		}
-		button.disabled = true;
-		button.nextElementSibling.disabled = false;
-		__log('Recording...', null, i);
-	}
 
-	function stopRecording(button, i) {
-		if (i == 1) {
-			recorder1 && recorder1.stop();
-		} else {
-			recorder2 && recorder2.stop();
+		function startRecording(button, i) {
+			if (i == 1) {
+				recorder1 && recorder1.record();
+			} else {
+				recorder2 && recorder2.record();
+			}
+			button.disabled = true;
+			button.nextElementSibling.disabled = false;
+			showLog('Recording...', null, i);
 		}
-		__log('Stopped recording.', null, i);
 
-		button.disabled = true;
-		button.previousElementSibling.disabled = false;
+		function stopRecording(button, i) {
+			if (i == 1) {
+				recorder1 && recorder1.stop();
+			} else {
+				recorder2 && recorder2.stop();
+			}
+			showLog('Stopped recording.', null, i);
 
-		// create WAV download link using audio data blob
-		createDownloadLink(i);
+			button.disabled = true;
+			button.previousElementSibling.disabled = false;
 
-		__log('Stopped recording.', null, i);
+			// create WAV download link using audio data blob
+			createDownloadLink(i);
 
-		if (i == 1)
-			recorder1.clear();
-		else
-			recorder2.clear();
-	}
+			showLog('Stopped recording.', null, i);
 
-	function createDownloadLink(i) {
-		var li = document.createElement('li');
-		var au = document.createElement('audio');
-		var hf = document.createElement('a');
-		var br = document.createElement("br");
+			if (i == 1)
+				recorder1.clear();
+			else
+				recorder2.clear();
+		}
 
-		au.controls = true;
+		function handleAudioEvent(blob, i) {
+			var li = document.createElement('li');
+			var player = document.createElement('audio');
+			var hf = document.createElement('a');
+			var br = document.createElement("br");
+			var url = URL.createObjectURL(blob);
+			player.controls = true;
 
-		if (i == 1) {
-			recorder1 && recorder1.exportWAV(function (blob) {
-				var url = URL.createObjectURL(blob);
-
-				au.src = url;
-				hf.href = url;
-				hf.download = new Date().toISOString() + '.wav';
-				hf.innerHTML = hf.download;
-				li.appendChild(au);
-				li.appendChild(br);
-				li.appendChild(hf);
+			player.src = url;
+			hf.href = url;
+			hf.download = new Date().toISOString() + '.wav';
+			hf.innerHTML = hf.download;
+			li.appendChild(player);
+			li.appendChild(br);
+			li.appendChild(hf);
+			if (i == 1)
 				recordingslist1.appendChild(li);
-			});
-		} else {
-			recorder2 && recorder2.exportWAV(function (blob) {
-				var url = URL.createObjectURL(blob);
-
-				au.src = url;
-				hf.href = url;
-				hf.download = new Date().toISOString() + '.wav';
-				hf.innerHTML = hf.download;
-				li.appendChild(au);
-				li.appendChild(br);
-				li.appendChild(hf);
+			else
 				recordingslist2.appendChild(li);
+		}
+
+		function createDownloadLink(i) {
+			if (i == 1)
+				recorder1 && recorder1.exportWAV(blob => handleAudioEvent(blob, 1));
+			else
+				recorder2 && recorder2.exportWAV(blob => handleAudioEvent(blob, 2));
+		}
+
+		function deleteAll(i) {
+			if (i == 1) {
+				recordingslist1.innerHTML = '';
+				btnAddFile1.value = '';
+			} else {
+				recordingslist2.innerHTML = '';
+				btnAddFile2.value = '';
+			}
+		}
+
+		window.onload = function init() {
+			try {
+				// webkit shim
+				window.AudioContext = window.AudioContext || window.webkitAudioContext;
+				navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+				window.URL = window.URL || window.webkitURL;
+
+				audio_context = new AudioContext;
+				showLog('audio context set up.');
+				showLog('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
+			} catch (e) {
+				alert('No web audio support in this browser!');
+			}
+
+			navigator.getUserMedia({ audio: true }, startUserMedia, function (e) {
+				showLog('No live audio input: ' + e);
 			});
-		}
-	}
 
-	function deleteAll(i) {
-		if (i == 1)
-			recordingslist1.innerHTML = '';
-		else
-			recordingslist2.innerHTML = '';
-	}
+			btnAddFile1.addEventListener('change', e => handleAudioEvent(e.target.files[0], 1));
+			btnAddFile2.addEventListener('change', e => handleAudioEvent(e.target.files[0], 2));
 
-	window.onload = function init() {
-		try {
-			// webkit shim
-			window.AudioContext = window.AudioContext || window.webkitAudioContext;
-			navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
-			window.URL = window.URL || window.webkitURL;
+		};
+	</script>
 
-			audio_context = new AudioContext;
-			__log('Audio context set up.');
-			__log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
-		} catch (e) {
-			alert('No web audio support in this browser!');
-		}
-
-		navigator.getUserMedia({ audio: true }, startUserMedia, function (e) {
-			__log('No live audio input: ' + e);
-		});
-	};
-</script>
-
-<script src="~/js/recorder.js"></script>
+	<script src="~/js/recorder.js"></script>
+}
