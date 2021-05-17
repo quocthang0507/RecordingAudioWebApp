@@ -3,10 +3,18 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
+    <Authors>La Quốc Thắng</Authors>
+    <Company>La Quốc Thắng</Company>
+    <Product>Recording and uploading audio in ASP.NET</Product>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\audio\" />
   </ItemGroup>
 
 </Project>

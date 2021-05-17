@@ -1,0 +1,44 @@
+﻿[
+	{
+		"outputFileName": "wwwroot/css/site.min.css",
+		"inputFiles": [
+			"wwwroot/css/site.css"
+		],
+		"minify": {
+			"enabled": true
+		}
+	},
+	{
+		"outputFileName": "wwwroot/js/site.min.js",
+		"inputFiles": [
+			"wwwroot/js/site.js"
+		],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	},
+	//{
+	//	"outputFileName": "wwwroot/js/site2.min.js",
+	//	"inputFiles": [
+	//		"wwwroot/js/site2.js"
+	//	],
+	//	"minify": {
+	//		"enabled": true,
+	//		"renameLocals": true
+	//	},
+	//	"sourceMap": false
+	//},
+	{
+		"outputFileName": "wwwroot/js/recorder.min.js",
+		"inputFiles": [
+			"wwwroot/js/recorder.js"
+		],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	}
+]

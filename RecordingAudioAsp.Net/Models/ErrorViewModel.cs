@@ -1,5 +1,3 @@
-using System;
-
 namespace RecordingAudioAsp.Net.Models
 {
 	public class ErrorViewModel

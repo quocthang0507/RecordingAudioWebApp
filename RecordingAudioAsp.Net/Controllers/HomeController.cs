@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RecordingAudioAsp.Net.Models;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace RecordingAudioAsp.Net.Controllers
@@ -12,10 +13,12 @@ namespace RecordingAudioAsp.Net.Controllers
 	public class HomeController : Controller
 	{
 		private readonly ILogger<HomeController> _logger;
+		private readonly IWebHostEnvironment _appEnvironment;
 
-		public HomeController(ILogger<HomeController> logger)
+		public HomeController(ILogger<HomeController> logger, IWebHostEnvironment hostingEnvironment)
 		{
 			_logger = logger;
+			_appEnvironment = hostingEnvironment;
 		}
 
 		public IActionResult Index()
@@ -37,6 +40,30 @@ namespace RecordingAudioAsp.Net.Controllers
 		public IActionResult Error()
 		{
 			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+		}
+
+		[HttpPost]
+		[Route("api/UploadAudio")]
+		[ProducesResponseType(200)]
+		[ProducesResponseType(400)]
+		public async Task<IActionResult> UploadAudio(IFormFile audio_data)
+		{
+			if (!ModelState.IsValid || audio_data == null || audio_data.Length == 0)
+				return BadRequest("Invalid uploaded file");
+			if (audio_data.ContentType != "audio/wav" && audio_data.ContentType != "audio/mpeg" && audio_data.ContentType != "audio/ogg")
+				return BadRequest("Invalid audio file type");
+			var uploadFolder = Path.Combine(_appEnvironment.WebRootPath, "audio");
+			var filePath = Path.Combine(uploadFolder, audio_data.FileName);
+			try
+			{
+				using FileStream filestream = new(filePath, FileMode.Create);
+				await audio_data.CopyToAsync(filestream);
+			}
+			catch (Exception e)
+			{
+				return BadRequest(e.Message);
+			}
+			return Ok("File uploaded successfully");
 		}
 	}
 }
