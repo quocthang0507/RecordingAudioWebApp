@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RecordingAudioAsp.Net.Models;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RecordingAudioAsp.Net.Controllers
@@ -28,6 +30,17 @@ namespace RecordingAudioAsp.Net.Controllers
 
 		public IActionResult RecorderJS()
 		{
+			return View();
+		}
+
+		public IActionResult AudioList()
+		{
+			var uploadFolder = Path.Combine(_appEnvironment.WebRootPath, "audio");
+			string[] audioFiles = ConcatUrls(
+				Directory.GetFiles(uploadFolder, "*.mp3"),
+				Directory.GetFiles(uploadFolder, "*.wav"),
+				Directory.GetFiles(uploadFolder, "*.ogg"));
+			ViewBag.AudioFiles = audioFiles;
 			return View();
 		}
 
@@ -59,6 +72,21 @@ namespace RecordingAudioAsp.Net.Controllers
 				return BadRequest(e.Message);
 			}
 			return Ok("File uploaded successfully");
+		}
+
+		public string[] ConcatUrls(params string[][] arrays)
+		{
+			List<string> result = new();
+			foreach (var arr in arrays)
+			{
+				result.AddRange(arr.ToList());
+			}
+			return result.Select(p => ConvertUrlFromAbsolutePath(p)).ToArray();
+		}
+
+		public string ConvertUrlFromAbsolutePath(string absolutePath)
+		{
+			return absolutePath.Replace(_appEnvironment.WebRootPath, "").Replace(@"\", "/");
 		}
 	}
 }

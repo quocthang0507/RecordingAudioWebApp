@@ -1,0 +1,17 @@
+﻿
+@{
+	ViewData["Title"] = "AudioList";
+}
+
+<div class="text-center">
+	<h1 class="display-4">Âm thanh của bạn</h1>
+</div>
+
+@foreach (string file in ViewBag.AudioFiles)
+{
+	<audio src="@file" controls></audio>
+}
+
+@section Scripts{
+
+}
