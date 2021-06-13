@@ -62,6 +62,8 @@ namespace RecordingAudioAsp.Net.Controllers
 				return BadRequest("Invalid audio file type");
 			var uploadFolder = Path.Combine(_appEnvironment.WebRootPath, "audio");
 			var filePath = Path.Combine(uploadFolder, audio_data.FileName);
+			if (System.IO.File.Exists(filePath))
+				return Ok("Duplicated uploaded file");
 			try
 			{
 				using FileStream filestream = new(filePath, FileMode.Create);
@@ -81,10 +83,10 @@ namespace RecordingAudioAsp.Net.Controllers
 			{
 				result.AddRange(arr.ToList());
 			}
-			return result.Select(p => ConvertUrlFromAbsolutePath(p)).ToArray();
+			return result.Select(p => ConvertRelativePath(p)).ToArray();
 		}
 
-		public string ConvertUrlFromAbsolutePath(string absolutePath)
+		public string ConvertRelativePath(string absolutePath)
 		{
 			return absolutePath.Replace(_appEnvironment.WebRootPath, "").Replace(@"\", "/");
 		}

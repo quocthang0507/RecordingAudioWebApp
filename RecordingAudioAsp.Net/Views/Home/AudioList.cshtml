@@ -9,9 +9,38 @@
 
 @foreach (string file in ViewBag.AudioFiles)
 {
-	<audio src="@file" controls></audio>
+	<audio src="@file" id="player" controls></audio>
+	<br />
+	<a href="@file" download="@file">@file</a>
+	<a href="#" id="btnUpload">Tải lên</a>
 }
 
-@section Scripts{
+<h4>Log</h4>
+<pre id="log"></pre>
 
+@section Scripts{
+	<script>
+		var btn = document.getElementById('btnUpload');
+		var player = document.getElementById('player');
+
+		function showLog(e, data) {
+			log.innerHTML += "\n" + e + " " + (data || '');
+			console.log("\n" + e + " " + (data || ''));
+		}
+
+		btn.addEventListener('click', async function (e) {
+			let xhr = new XMLHttpRequest();
+			xhr.onload = function (e) {
+				if (this.readyState === 4) {
+					showLog('Server returned: ', e.target.responseText, 1);
+				}
+			};
+			let fd = new FormData();
+			let blob = await fetch(player.src).then(r => r.blob());
+			let filename = player.src.replace(/^.*[\\\/]/, '')
+			fd.append('audio_data', blob, filename);
+			xhr.open('POST', '/api/UploadAudio', true);
+			xhr.send(fd);
+		});
+	</script>
 }
